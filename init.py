@@ -57,21 +57,26 @@ for product in product_list:
 user_email = input("Enter the Email Address of the Policy Owner: ")
 for product in product_list:
     print(f"Product Name: {product['productName']}")
+    num_policies = 0
     for product_policy in product["product_policies"]:
         if product_policy["owner"]["email"] == user_email:
             print(f"\tPolicy Name: {product_policy['name']}\n\tOwner: {user_email}")
+            num_policies += 1
     
-    if bool(product['product_policies']) == False:
+    if num_policies == 0:
         print(f"\tNone")
         
     print("\t==============================================")
         
     for project in product["projects"]:
         print(f"\tProject Name: {project['projectName']}")
+        num_policies = 0
         for project_policy in project["project_policies"]:
             if project_policy["owner"]["email"] == user_email:
                 print(f"\t\tPolicy Name: {product_policy['name']}\n\t\tOwner: {user_email}")
-        if bool(project['project_policies']) == False:
+                num_policies += 1
+                
+        if num_policies == 0:
             print(f"\t\tNone")
     
     print("\n")
