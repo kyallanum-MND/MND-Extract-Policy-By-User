@@ -4,7 +4,7 @@ This is a tool created by WhiteSource Support, to easily find policies created b
 
 To run, you will need Python installed. From there you just need to:
 
-```
+```bash
 $> python -m venv env                 #Install virtual environment
 $> env/scripts/activate               #Activate virtual environment
 $> pip install -r requirements.txt    #Install required packages
