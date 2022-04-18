@@ -77,11 +77,12 @@ for product in product_list:
     
     product['product_policies'] = product_policies_json['policies']
     
+    print(f"\tGetting Policies for projects in the product: {product['productName']}...", end="")
+    
     for project in product["projects"]:
         api_request['requestType'] = "getProjectPolicies"
         api_request['projectToken'] = project['projectToken']
         
-        print(f"\tGetting Policies for project: {project['projectName']}...", end="")
         try:
             project_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
         except Exception:
@@ -92,13 +93,12 @@ for product in product_list:
         if "errorMessage" in project_policies_json:
             raise WSDataNotReturnedError(project_policies_json['errorMessage'])
         
-        print(f"Finished")
-        
         project['project_policies'] = project_policies_json['policies']
         
     if "projectToken" in api_request:
         del api_request['projectToken']
 
+    print(f"Finished")
 
 #Get all policies from a specific user.
 user_email = input("Enter the Email Address of the Policy Owner: ")
