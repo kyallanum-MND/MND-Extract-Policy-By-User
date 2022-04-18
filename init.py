@@ -99,6 +99,7 @@ for product in product_list:
     if "projectToken" in api_request:
         del api_request['projectToken']
 
+
 #Get all policies from a specific user.
 user_email = input("Enter the Email Address of the Policy Owner: ")
 output_str = ""
@@ -132,3 +133,4 @@ for product in product_list:
         f.write(output_str)
 
     
+print("Results have been stored in: \"policies.txt\"")
