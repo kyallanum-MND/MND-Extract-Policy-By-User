@@ -1,6 +1,11 @@
 import requests
 import json
 
+class WSDataNotReturnedError(Exception):
+    def __init__(self, msg):
+        print(f"Error:\n\t{msg}")
+        super().__init()
+
 #Declare API information
 api_request = {
     "requestType": "getAllProducts",
@@ -16,9 +21,16 @@ api_request['userKey'] = input(f"Enter your User Key for {environment}: ")
 api_request['orgToken'] = input(f"Enter the organization token: ")
 
 #Get the products in the organization
-products_str = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+try:
+    products_str = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+except Exception:
+    raise WSDataNotReturnedError("Products in the given organization were not found.")
 
 products_json = json.loads(products_str.content)
+
+if "errorMessage" in products_json:
+    raise WSDataNotReturnedError(products_json['errorMessage'])
+
 product_list = []
 for product in products_json['products']:
     product_list.append({"productName": product['productName'], "productToken": product['productToken']})
@@ -30,53 +42,93 @@ api_request["requestType"] = "getAllProjects"
 
 for product in product_list:
     api_request["productToken"] = product["productToken"]
-    projects_str = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+    print(f"Getting projects for product: {product['productName']}...", end="")
+    try:
+        projects_str = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+    except Exception:
+        raise WSDataNotReturnedError(f"Product {product['productName']} - {product['productToken']} returned an error:")
+    
     projects_json = json.loads(projects_str.content)
+    
+    if "errorMessage" in projects_json:
+            raise WSDataNotReturnedError(projects_str['errorMessage'])
+    
+    print("Finished")
     product["projects"] = projects_json["projects"]
 
 
 #Get the policies for each product and project
 for product in product_list:
     api_request['requestType'] = "getProductPolicies"
-    api_request['productToken'] = product["productToken"]            
-    product_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+    api_request['productToken'] = product["productToken"]
+    
+    print(f"Getting Policies for product: {product['productName']}...", end="")
+    try:           
+        product_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+    except Exception:
+        raise WSDataNotReturnedError(f"Product {product['productName']} - {product['productToken']} returned an error when attempting to get policies.")
+    
     product_policies_json = json.loads(product_policies.content)
+    
+    if "errorMessage" in product_policies_json:
+        raise WSDataNotReturnedError(product_policies_json['errorMessage'])
+    
+    print("Finished")
+    
     product['product_policies'] = product_policies_json['policies']
     
     for project in product["projects"]:
         api_request['requestType'] = "getProjectPolicies"
-        del api_request['productToken']
         api_request['projectToken'] = project['projectToken']
-        project_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+        
+        print(f"\tGetting Policies for project: {project['projectName']}...", end="")
+        try:
+            project_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+        except Exception:
+            raise WSDataNotReturnedError(f"Project {project['projectName']} - {project['projectToken']} returned an error when attempting to get policies.")
+        
         project_policies_json = json.loads(project_policies.content)
+        
+        if "errorMessage" in project_policies_json:
+            raise WSDataNotReturnedError(project_policies_json['errorMessage'])
+        
+        print(f"Finished")
+        
         project['project_policies'] = project_policies_json['policies']
         
-    del api_request['projectToken']
+    if "projectToken" in api_request:
+        del api_request['projectToken']
 
 #Get all policies from a specific user.
 user_email = input("Enter the Email Address of the Policy Owner: ")
+output_str = ""
 for product in product_list:
-    print(f"Product Name: {product['productName']}")
+    output_str += f"Product Name: {product['productName']}"
     num_policies = 0
     for product_policy in product["product_policies"]:
         if product_policy["owner"]["email"] == user_email:
-            print(f"\tPolicy Name: {product_policy['name']}\n\tOwner: {user_email}")
+            output_str += f"\tPolicy Name: {product_policy['name']}\n\tOwner: {user_email}"
             num_policies += 1
     
     if num_policies == 0:
-        print(f"\tNone")
+        output_str += f"\tNone"
         
-    print("\t==============================================")
+    output_str += "\t=============================================="
         
     for project in product["projects"]:
-        print(f"\tProject Name: {project['projectName']}")
+        output_str += f"\tProject Name: {project['projectName']}"
         num_policies = 0
         for project_policy in project["project_policies"]:
             if project_policy["owner"]["email"] == user_email:
-                print(f"\t\tPolicy Name: {product_policy['name']}\n\t\tOwner: {user_email}")
+                output_str += f"\t\tPolicy Name: {product_policy['name']}\n\t\tOwner: {user_email}"
                 num_policies += 1
                 
         if num_policies == 0:
-            print(f"\t\tNone")
+            output_str += f"\t\tNone"
     
-    print("\n")
+    output_str += "\n"
+    
+    with open("policies.txt", 'w') as f:
+        f.write(output_str)
+
+    
