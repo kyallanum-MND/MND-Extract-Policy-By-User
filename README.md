@@ -1,14 +1,25 @@
-### WS-Extract-Policies-By-User
+[![Logo](https://whitesource-resources.s3.amazonaws.com/ws-sig-images/Whitesource_Logo_178x44.png)](https://www.whitesourcesoftware.com/)  
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This is a tool created by WhiteSource Support, to easily find policies created by a user in a WhiteSource Organization. 
+# [Mend Extract Policy By User Tool](https://github.com/kyallanum-MND/MND-Extract-Policy-By-User)
+This tool allows you to extract all of the policies a user owns.
 
-To run, you will need Python installed. From there you just need to:
+## Prerequisites
+* Python 3.6+
 
-```bash
-$> python -m venv env                 #Install virtual environment
-$> env/scripts/activate               #Activate virtual environment
-$> pip install -r requirements.txt    #Install required packages
-$> python init.py                     #Run the script
+## Installation and Execution by cloning this repo:
+1. Clone the repo:
+```shell
+git clone https://github.com/kyallanum-MND/MND-Extract-Policy-By-User.git
 ```
 
-The concept behind this is that it will get every single product and project in your organization, and then check for policies related to the user specified and print them out. It will output the whole organization structure in a "policies.txt" file, and you will be able to search for the user's email address to see which policies that user owns.
+2. Run setup.py
+```shell
+cd MND-Extract-Policy-By-User
+python setup.py install
+```
+
+3. Execution
+```shell
+mnd_extract_policy_by_user
+```
