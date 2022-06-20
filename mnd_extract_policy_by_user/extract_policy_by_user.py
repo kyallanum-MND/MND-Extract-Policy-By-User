@@ -77,28 +77,33 @@ for product in product_list:
     
     product['product_policies'] = product_policies_json['policies']
     
-    print(f"\tGetting Policies for projects in the product: {product['productName']}...", end="")
-    
-    for project in product["projects"]:
-        api_request['requestType'] = "getProjectPolicies"
-        api_request['projectToken'] = project['projectToken']
-        
-        try:
-            project_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
-        except Exception:
-            raise WSDataNotReturnedError(f"Project {project['projectName']} - {project['projectToken']} returned an error when attempting to get policies.")
-        
-        project_policies_json = json.loads(project_policies.content)
-        
-        if "errorMessage" in project_policies_json:
-            raise WSDataNotReturnedError(project_policies_json['errorMessage'])
-        
-        project['project_policies'] = project_policies_json['policies']
+
+    if len(product['projects']) > 0:
+        index = 0
+        for project in product["projects"]:
+            api_request['requestType'] = "getProjectPolicies"
+            api_request['projectToken'] = project['projectToken']
+            index += 1
+            
+            print(f"\tGetting Policies for projects in the product: {product['productName']} ({index}/{len(product['projects'])})...", end="\r")
+            
+            try:
+                project_policies = requests.post(f"{environment}{request_suffix}", headers=request_headers, data=json.dumps(api_request))
+            except Exception:
+                raise WSDataNotReturnedError(f"Project {project['projectName']} - {project['projectToken']} returned an error when attempting to get policies.")
+            
+            project_policies_json = json.loads(project_policies.content)
+            
+            if "errorMessage" in project_policies_json:
+                raise WSDataNotReturnedError(project_policies_json['errorMessage'])
+            
+            project['project_policies'] = project_policies_json['policies']
+
+            
+        print(f"\tGetting Policies for projects in the product: {product['productName']} ({index}/{len(product['projects'])})...Finished")
         
     if "projectToken" in api_request:
         del api_request['projectToken']
-
-    print(f"Finished")
 
 #Get all policies from a specific user.
 user_email = input("Enter the Email Address of the Policy Owner: ")
@@ -108,7 +113,7 @@ for product in product_list:
     num_policies = 0
     for product_policy in product["product_policies"]:
         if product_policy["owner"]["email"] == user_email:
-            output_str += f"\tPolicy Name: {product_policy['name']}\n\tOwner: {user_email}"
+            output_str += f"\tPolicy Name: {product_policy['name']}\n\t\tOwner: {user_email}"
             num_policies += 1
     
     if num_policies == 0:
@@ -121,7 +126,7 @@ for product in product_list:
         num_policies = 0
         for project_policy in project["project_policies"]:
             if project_policy["owner"]["email"] == user_email:
-                output_str += f"\t\tPolicy Name: {product_policy['name']}\n\t\tOwner: {user_email}\n"
+                output_str += f"\t\tPolicy Name: {product_policy['name']}\n\t\t\tOwner: {user_email}\n"
                 num_policies += 1
                 
         if num_policies == 0:
