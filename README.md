@@ -26,8 +26,12 @@ mnd_extract_policy_by_user
 
 ## Execution
 When running this script there are two stages: Information Gathering, and Sorting.
-1. Information Gathering runs API requests to get all of the products and projects in an organization, and then gets every single policy for every single product and project.
-2. Sorting goes through every single product and project and determines whether a policy owned by the given user exists.
+1. Entering Information allows the user to enter information for their organization to run API requests.  
+  a. **URL** - The url of the environment without the API endpoint. Such as: https://saas.whitesourcesoftware.com  
+  b. **User Key** - The user key of an administrator user inside of the organization.  
+  c. **Organization Token** - The API key that you would normally get from the Integrate tab of the Mend UI.
+2. Information Gathering runs API requests to get all of the products and projects in an organization, and then gets every single policy for every single product and project.
+3. Sorting goes through every single product and project and determines whether a policy owned by the given user exists.
 
 At the end it will create a file called policies.txt that will create a file in the following format:
 ```
